@@ -10,7 +10,7 @@ struct SEM{
     int ret;
 }
 
-sem_init(int initVal) {
+Tem_init(int initVal) {
     SEM new;
     new.value = initVal;
     new.pshared = 0;
