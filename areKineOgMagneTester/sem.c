@@ -26,13 +26,14 @@ SEM *sem_init(int initVal) {
 
 int sem_del(SEM *sem){
     free(sem);
-
-    if(sem->value){
+    if(sem){
         return 0;
     }
     else{
         return -1;
     }
+
+
 };
 
 void P(SEM *sem){
@@ -68,21 +69,9 @@ void V(SEM *sem){
 
 void main(){
     SEM *sem = sem_init(2);
-    printf("%d\n", sem->value);
-    P(sem);
-    printf("%d\n", sem->value);
-    V(sem);
-    printf("%d\n", sem->value);
-    P(sem);
-    printf("%d\n", sem->value);
-    P(sem);
-    printf("%d\n", sem->value);
-    P(sem);
-    printf("%d\n", sem->value);
-    P(sem);
-    printf("%d\n", sem->value);
-    V(sem);
-    printf("%d\n", sem->value);
+
+    printf("%i", sem_del(sem));
+  
 
 
    
