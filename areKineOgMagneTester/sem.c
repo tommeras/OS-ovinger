@@ -5,7 +5,6 @@
 
 int value;
 int pshared;
-pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 
 typedef struct SEM{
     int value;
@@ -17,6 +16,8 @@ SEM *sem_init(int initVal) {
     SEM *sem = malloc(sizeof(struct SEM));
     //SEM *new;
     sem -> value = initVal;
+    sem -> cond = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+    sem -> mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
     //(*new).value = 1;
 
     return sem; 
@@ -24,31 +25,42 @@ SEM *sem_init(int initVal) {
 
 
 int sem_del(SEM *sem){
+    free(sem);
 
+    if(sem->value){
+        return 0;
+    }
+    else{
+        return -1;
+    }
 };
 
 void P(SEM *sem){
-    if(sem->value==0){
-        int i = pthread_cond_wait(&sem->cond, &sem->mutex);
-        if(i=0){
-            printf("i=0\n");
-        }
-        else{
-            printf("i=/=0\n");
-        }
-
+    if(sem -> value > 0){
+            sem->value--;
     }
     else{
-        sem->value = sem->value-1;
+        pthread_mutex_lock(&(sem->mutex));
+        pthread_cond_wait(&(sem->cond),&(sem->mutex));
+        pthread_mutex_unlock(&(sem -> mutex));
     }
+
+    /* while(sem->value == 0){
+        int i = pthread_cond_wait(&sem->cond, &sem->mutex);
+    }
+    sem->value = sem->value-1; */
     
     
 
 };
 
 void V(SEM *sem){
-
-    sem->value = sem->value+1;
+    pthread_mutex_lock(&(sem->mutex));
+    if(sem -> value <= 0){
+        pthread_cond_signal(&(sem->cond));
+    }
+    sem->value++;
+    pthread_mutex_unlock(&(sem -> mutex));
 
 
 };
@@ -59,10 +71,19 @@ void main(){
     printf("%d\n", sem->value);
     P(sem);
     printf("%d\n", sem->value);
+    V(sem);
+    printf("%d\n", sem->value);
+    P(sem);
+    printf("%d\n", sem->value);
     P(sem);
     printf("%d\n", sem->value);
     P(sem);
     printf("%d\n", sem->value);
+    P(sem);
+    printf("%d\n", sem->value);
+    V(sem);
+    printf("%d\n", sem->value);
 
 
+   
 }
