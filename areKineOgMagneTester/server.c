@@ -5,11 +5,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include "bbuffer.c"
+#include <pthread.h>
+
 
 #define PORT 8080
 #define MAXREQ (4096*1024)
 char buffer[MAXREQ], body[MAXREQ], msg[MAXREQ];
 void error(const char *msg) { perror(msg); exit(1); }
+BNDBUF bbuffer;
+
 
 #define PATH_LENGTH 100
 
@@ -29,7 +34,28 @@ int getFilepathFromRequest(char request[], char filepath[PATH_LENGTH])
     return 1;
 }
 
+worker(void *arg){
+    int fd;
+    while(1){
+        fd = bb_get(&bbuffer);
+    
+        bzero(buffer,sizeof(buffer));
+        int n = read (fd,buffer,sizeof(buffer)-1);
+        if (n < 0) error("ERROR reading from socket");
+        snprintf (body, sizeof (body), arg, buffer);
+        snprintf (msg, sizeof (msg),
+        "HTTP/1.0 200 OK\n"
+        "Content-Type: text/html\n"
+        "Content-Length: %lu\n\n%s", strlen(body), body);
+        n = write (fd,msg,strlen(msg));
+        if (n < 0) error("ERROR writing to socket");
+        close (fd);
+    }
+};
+
+
 int main(int argc, char *argv[]) {
+
 
     printf("Starting program");
     if (argc < 3) {
@@ -50,11 +76,15 @@ int main(int argc, char *argv[]) {
         error("\nError - number of threads is not an integer");
     }
 
+
+    
+
     int n_bufferslots = 5;
     if (argc > 4 && sscanf(argv[4], "%i", &n_bufferslots) != 1) {
         error("\nError - number of bufferslots is not an integer");
     }
 
+    bbuffer = *bb_init(n_bufferslots);
     char * htmlstring = 0;
     long length;
     FILE * fp;
@@ -77,14 +107,18 @@ int main(int argc, char *argv[]) {
 
         }
 
-
+    for (size_t i = 0; i < n_threads; i++)
+    {
+        pthread_t threadId;
+        int j = pthread_create(&threadId, NULL, &worker, (void*)htmlstring);
+    }
 
  
     int sockfd, newsockfd;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
 
-    int n;
+   
     sockfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) error("ERROR opening socket");
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -101,16 +135,9 @@ int main(int argc, char *argv[]) {
     newsockfd = accept (sockfd, (struct sockaddr *) &cli_addr,
     &clilen);
     if (newsockfd < 0) error("ERROR on accept");
-    bzero(buffer,sizeof(buffer));
-    n = read (newsockfd,buffer,sizeof(buffer)-1);
-    if (n < 0) error("ERROR reading from socket");
-    snprintf (body, sizeof (body), htmlstring, buffer);
-    snprintf (msg, sizeof (msg),
-    "HTTP/1.0 200 OK\n"
-    "Content-Type: text/html\n"
-    "Content-Length: %lu\n\n%s", strlen(body), body);
-    n = write (newsockfd,msg,strlen(msg));
-    if (n < 0) error("ERROR writing to socket");
-    close (newsockfd);
+    bb_add(&bbuffer, newsockfd);
+
+
+
  }
 }

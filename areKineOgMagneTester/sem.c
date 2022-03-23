@@ -25,26 +25,27 @@ SEM *sem_init(int initVal) {
 
 
 int sem_del(SEM *sem){
+    int ret = 0;
+    if(pthread_mutex_destroy(&sem->mutex)!=0){
+        ret=-1;
+    };
+    if(pthread_cond_destroy(&sem->cond)!=0){
+        ret=-1;
+    };
     free(sem);
-    if(sem){
-        return 0;
-    }
-    else{
-        return -1;
-    }
+    return ret;
 
 
 };
 
 void P(SEM *sem){
-    if(sem -> value > 0){
-            sem->value--;
-    }
-    else{
-        pthread_mutex_lock(&(sem->mutex));
+    pthread_mutex_lock(&(sem->mutex));
+
+    while(sem -> value <= 0){
         pthread_cond_wait(&(sem->cond),&(sem->mutex));
-        pthread_mutex_unlock(&(sem -> mutex));
     }
+    sem->value--;
+    pthread_mutex_unlock(&(sem -> mutex));
 
     /* while(sem->value == 0){
         int i = pthread_cond_wait(&sem->cond, &sem->mutex);
@@ -57,22 +58,19 @@ void P(SEM *sem){
 
 void V(SEM *sem){
     pthread_mutex_lock(&(sem->mutex));
-    if(sem -> value <= 0){
-        pthread_cond_signal(&(sem->cond));
-    }
     sem->value++;
+    pthread_cond_signal(&(sem->cond));
     pthread_mutex_unlock(&(sem -> mutex));
-
-
 };
 
 
-void main(){
-    SEM *sem = sem_init(2);
+// // void main(){
+//     SEM *sem = sem_init(2);
+//   //  SEM *sem;
 
-    printf("%i", sem_del(sem));
+//     printf("%i\n", sem_del(sem));
   
 
 
    
-}
+// }
