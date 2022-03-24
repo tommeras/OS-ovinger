@@ -61,11 +61,14 @@ worker(void *arg){
         ptr2 =strtok(NULL, delim2);
         printf("%s\n", ptr2);
         printf("%s\n", arg);
+        char str[10];
+        strcpy(str, arg);
+
 
         //Her et sted blir det feil
-        strcat(arg,ptr2);
-        printf(arg);
-        fp = fopen(arg, "r");
+        strcat(str,ptr2);
+        printf(str);
+        fp = fopen(str, "r");
 
         if(fp) 
             if (fp) {
@@ -83,7 +86,7 @@ worker(void *arg){
                 fclose(fp);
 
             }
-        printf("%s", htmlstring);
+      //  printf("%s", htmlstring);
 
 
 
