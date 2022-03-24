@@ -61,6 +61,8 @@ worker(void *arg){
         ptr2 =strtok(NULL, delim2);
         printf("%s\n", ptr2);
         printf("%s\n", arg);
+
+        //Her et sted blir det feil
         strcat(arg,ptr2);
         printf(arg);
         fp = fopen(arg, "r");
