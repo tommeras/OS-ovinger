@@ -50,6 +50,7 @@ worker(void *arg){
         strcpy(str, arg);
 
 
+        //Her et sted blir det feil
         strcat(str,ptr2);
         printf("%s", &str);
         fp = fopen(str, "r");
@@ -70,6 +71,7 @@ worker(void *arg){
                 fclose(fp);
 
             }
+      //  printf("%s", htmlstring);
 
 
 
@@ -84,6 +86,7 @@ worker(void *arg){
         "Content-Length: %lu\n\n%s", strlen(body), body);
         n = write (fd,msg,strlen(msg));
         if (n < 0) error("ERROR writing to socket");
+     //   close (fd);
     }
 };
 
