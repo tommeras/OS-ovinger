@@ -16,6 +16,7 @@ void error(const char *msg) { perror(msg); exit(1); }
 BNDBUF bbuffer;
 
 
+
 #define PATH_LENGTH 100
 
 int getFilepathFromRequest(char request[], char filepath[PATH_LENGTH])
@@ -35,21 +36,67 @@ int getFilepathFromRequest(char request[], char filepath[PATH_LENGTH])
 }
 
 worker(void *arg){
+
     int fd;
-    while(1){
+     while(1){
         fd = bb_get(&bbuffer);
+        char * htmlstring = 0;
+        long length;
+        FILE * fp;
+       
     
         bzero(buffer,sizeof(buffer));
         int n = read (fd,buffer,sizeof(buffer)-1);
+
         if (n < 0) error("ERROR reading from socket");
-        snprintf (body, sizeof (body), arg, buffer);
+        char delim[] = "\n";
+        printf("%s\n", buffer);
+        char *ptr = strtok(buffer, delim);
+        printf("%s\n", ptr);
+
+
+        char delim2[] = " ";
+        char *ptr2 = strtok(ptr, delim2);
+        printf("%s\n", ptr2);
+        ptr2 =strtok(NULL, delim2);
+        printf("%s\n", ptr2);
+        printf("%s\n", arg);
+        strcat(arg,ptr2);
+        printf(arg);
+        fp = fopen(arg, "r");
+
+        if(fp) 
+            if (fp) {
+                fseek(fp,0, SEEK_END);
+                length = ftell(fp);
+                fseek(fp, 0, SEEK_SET);
+                htmlstring = malloc(length);
+
+                if(htmlstring)
+
+                {
+                    fread(htmlstring, 1, length, fp);
+                }
+
+                fclose(fp);
+
+            }
+        printf("%s", htmlstring);
+
+
+
+        
+
+
+
+        snprintf (body, sizeof (body), htmlstring, buffer);
         snprintf (msg, sizeof (msg),
         "HTTP/1.0 200 OK\n"
         "Content-Type: text/html\n"
         "Content-Length: %lu\n\n%s", strlen(body), body);
         n = write (fd,msg,strlen(msg));
         if (n < 0) error("ERROR writing to socket");
-        close (fd);
+     //   close (fd);
     }
 };
 
@@ -85,32 +132,12 @@ int main(int argc, char *argv[]) {
     }
 
     bbuffer = *bb_init(n_bufferslots);
-    char * htmlstring = 0;
-    long length;
-    FILE * fp;
-    fp = fopen(www_path, "r");
 
-    if(fp) 
-        if (fp) {
-            fseek(fp,0, SEEK_END);
-            length = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-            htmlstring = malloc(length);
-
-            if(htmlstring)
-
-            {
-                fread(htmlstring, 1, length, fp);
-            }
-
-            fclose(fp);
-
-        }
 
     for (size_t i = 0; i < n_threads; i++)
     {
         pthread_t threadId;
-        int j = pthread_create(&threadId, NULL, &worker, (void*)htmlstring);
+        int j = pthread_create(&threadId, NULL, &worker, (void*)www_path);
     }
 
  
