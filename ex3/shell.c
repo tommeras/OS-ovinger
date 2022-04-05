@@ -27,6 +27,7 @@ char* takeInput () {
 
     printf("%s: ", cwd);
     characters = getline(&buffer,&size,stdin);
+    
     printf("%s", buffer);
     return buffer;
 }
@@ -57,7 +58,6 @@ char **parseInput(char *line) {
     }    
 
     if (strcmp(tokens[0],"cd")){
-
         execv(tokens[0], tokens);
         
     } else{
@@ -68,11 +68,27 @@ char **parseInput(char *line) {
 
 
 int main () {
+    pid_t pid = fork();
+
+
+    int status;
+     
+    waitpid(pid, &status, 0);
+
+    if ( WIFEXITED(status) )
+        {
+            int exit_status = WEXITSTATUS(status);       
+            printf("Exit status = %d\n", exit_status);
+        }
+   
+
     do{
         char *input = takeInput();
         char** arguments = parseInput(input);
     }
+
     while (1); 
-        printf("Exit status: %d", EXIT_SUCCESS);    
+
+     
     
 }
