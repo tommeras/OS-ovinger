@@ -4,6 +4,8 @@
 #include <string.h>
 
 #define PATH_MAX 1024
+#define LSH_TOK_BUFSIZE 64
+
 
 char* takeInput () {
     char *buffer;
@@ -11,13 +13,10 @@ char* takeInput () {
     size_t characters;
 
     char cwd[PATH_MAX];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-       // printf("Current working dir: %s\n", cwd);
-    } else {
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
         perror("getcwd() error");
         return "Error";
-    }
-
+    } 
 
     buffer = (char *)malloc(size * sizeof(char));
     if( buffer == NULL)
@@ -32,25 +31,48 @@ char* takeInput () {
     return buffer;
 }
 
-char* parseInput(char *input){
-    char * token = strtok(input, " ");
-    char * path;
-    char * command;
-    strcpy(token, path);
+char **parseInput(char *line) {
 
-   // loop through the string to extract all other tokens
-    while( token != NULL ) {
-        printf( " %s\n", token ); //printing each token
+    int bufsize = LSH_TOK_BUFSIZE, position = 0;
+
+    char **tokens = malloc(bufsize * sizeof(char*));
+
+    char *token;
+    token = strtok(line, " ");
+
+    while (token != NULL) {
+        tokens[position] = token;
+        position++;
+
+        if (position >= bufsize) {
+            bufsize += LSH_TOK_BUFSIZE;
+            tokens = realloc(tokens, bufsize * sizeof(char*));
+            if (!tokens) {
+                fprintf(stderr, "lsh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+
         token = strtok(NULL, " ");
-        strcpy(token, command);
-    }
-  //  printf("%s %s", path, command);
+    }    
 
-    return "Hei";
+    if (strcmp(tokens[0],"cd")){
+
+        execv(tokens[0], tokens);
+        
+    } else{
+        printf("Dette funket ikke \n");
+    }
+    return tokens;
 }
 
+
 int main () {
-    char *input = takeInput();
-    parseInput(input);
-    return 0;
+    do{
+        char *input = takeInput();
+        char** arguments = parseInput(input);
+    }
+    while (1); 
+        printf("Exit status: %d", EXIT_SUCCESS);    
+    
 }
