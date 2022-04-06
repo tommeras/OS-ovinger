@@ -57,29 +57,26 @@ char **parseInput(char *line) {
         token = strtok(NULL, " ");
     }    
 
-    if (strcmp(tokens[0],"cd")){
-        execv(tokens[0], tokens);
-        
-    } else{
-        printf("Dette funket ikke \n");
-    }
-    return tokens;
-}
-
-
-int main () {
     pid_t pid = fork();
 
+    if(pid == 0) {
+        execv(tokens[0], tokens);
+    }
 
     int status;
      
     waitpid(pid, &status, 0);
 
-    if ( WIFEXITED(status) )
-        {
-            int exit_status = WEXITSTATUS(status);       
-            printf("Exit status = %d\n", exit_status);
-        }
+    if ( WIFEXITED(status) ) {
+        int exit_status = WEXITSTATUS(status);       
+        printf("Exit status [%s] = %d\n", tokens[0], exit_status);
+    }
+
+    return tokens;
+}
+
+
+int main () {
    
 
     do{
