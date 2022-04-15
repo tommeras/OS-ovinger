@@ -14,8 +14,7 @@ char cwd[PATH_MAX];
 char cmd[MAX_SIZE_CMD];		
 char *argv[MAX_SIZE_ARG];			
 pid_t pid;										
-char i;	
-int flag;											
+char i;												
 
 void takeInput(){
     
@@ -77,9 +76,6 @@ void startShell(){
                 int exit_status = WEXITSTATUS(status);       
                 printf("Exit status [%s] = %d\n", cmd, exit_status);
             }
-            
-        // flag = scanf("%[^\n]%*c", cmd);
-
 	}
 }
 
