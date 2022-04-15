@@ -14,7 +14,8 @@ char cwd[PATH_MAX];
 char cmd[MAX_SIZE_CMD];		
 char *argv[MAX_SIZE_ARG];			
 pid_t pid;										
-char i;												
+char i;	
+int flag;											
 
 void takeInput(){
     
@@ -52,11 +53,11 @@ void executeCD(char *args[]){
 	}
 }
 
-int startShell(){
-	while(1){
+void startShell(){
+	while(!feof(stdin)){
 		takeInput();
         parseInput();
-
+    
         if(!strcmp("cd", cmd)) {
             executeCD(argv);
             continue;
@@ -65,6 +66,7 @@ int startShell(){
 		pid = fork();
 		if(pid == 0){
             execvp(argv[0], argv);
+            exit(0);
 		}
       
         int status;
@@ -75,7 +77,9 @@ int startShell(){
                 int exit_status = WEXITSTATUS(status);       
                 printf("Exit status [%s] = %d\n", cmd, exit_status);
             }
-      
+            
+        // flag = scanf("%[^\n]%*c", cmd);
+
 	}
 }
 
