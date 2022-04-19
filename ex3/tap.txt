@@ -1,7 +1,0 @@
-sell
-shell
-shell.c
-t.txt
-test.txt
-text.txt
-tst.txt
