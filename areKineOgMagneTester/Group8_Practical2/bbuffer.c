@@ -66,10 +66,4 @@ void bb_add(BNDBUF *bb, int fd){
     V(bb -> full_slots);
 };
 
-// void main(){
-//     BNDBUF test = *bb_init(100);
-//  //   bb_del(&test);
-//     bb_add(&test, 6);
-//     printf("%i\n", bb_get(&test));
-// }
 
